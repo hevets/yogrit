@@ -7,10 +7,13 @@
 module.exports = {
   
   /**
-   * save: run the save step in the udpate
+   * opts: can modifiy behavior of migration
    */
 
-  save: false, 
+  opts: {
+    save: true
+  },
+
 
   /**
    * bucket: the collection you'll want to be running the update against

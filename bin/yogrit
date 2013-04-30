@@ -4,12 +4,12 @@
  * dependencies
  */
 
-var Mongrate = require('../mongrate');
+var Yogrit = require('../yogrit');
 var Create = require('../lib/create');
 
 var usage = [
   '',
-  'Mongrate has two methods: \033[32mcreate \033[mand \033[32mrun\033[m'
+  'Yogrit has two methods: \033[32mcreate \033[mand \033[32mrun\033[m'
 ].join('\n');
 
 var opt = require('optimist');
@@ -21,4 +21,3 @@ var argv = require('optimist')
 
 if(!argv.create && !argv.run)
   opt.showHelp();
-

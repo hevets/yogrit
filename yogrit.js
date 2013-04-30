@@ -136,18 +136,23 @@ Yogrit.prototype._loadUpdates = function() {
   });
 };
 
-/**
- * _runUpdate: 
- */
-
 Yogrit.prototype._runUpdate = function(file, callback) { 
+
+  // TODO: create a wrapper object to hold migrate_files
+  file.opts = (file.opts) ? file.opts : {};
+  file.opts.qualify = (file.opts.qualify) ? file.opts.qualify : true;
+  file.opts.verify = (file.opts.verify) ? file.opts.verify : true;
+  file.opts.save = (file.opts.save) ? file.opts.save : false;
 
   file.bucket(function(collection) {
     async.each(collection, function(model, cb) {
       async.series({
 
         qualify: function(next) {
-          file.qualify(model, next);
+          if(file.opts.qualify)
+            return file.qualify(model, next)
+
+          return next();
         }, 
         
         mutate: function(next) {
@@ -155,32 +160,30 @@ Yogrit.prototype._runUpdate = function(file, callback) {
         },
 
         verify: function(next) {
-          file.verify(model, next);
+          if(file.opts.verify)
+            return file.verify(model, next);
+
+          return next();
         },
 
         save: function(next) {
-          if(!file.save)
-            return next();
-          
-          file.save(model, next);
+          if(file.opts.save)
+            return file.save(model, next);
+            
+          return next();
         }
       }, function(err, results) {
         if(err) return console.error('\033[31m' + err + '\033[m');
 
         return cb();
-      });  
-
+      }); // async.end series
     }, function(err) {
       if(err) throw new Error();
 
       console.info('Done');
-    });
+    }); // end async.each
       
   });
 };
-
-function UpdateFile() {
-
-}
 
 exports = module.exports = Yogrit;
