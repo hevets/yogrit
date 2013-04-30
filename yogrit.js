@@ -18,7 +18,7 @@ var _ = require('underscore');
  * Yogrit: Update Yogrit that is test driven
  *
  * Usage: 
- * var Yogrit = new Yogrit({files: ['update.file.1.js', 'update.file.2.js'], autorun: true, dryrun: true, });
+ * var Yogrit = new Yogrit({files: ['update.file.1.js', 'update.file.2.js'], autorun: true });
  * 
  */
 function Yogrit(opts) {
@@ -54,9 +54,10 @@ Yogrit.prototype._parseOptions = function(opts) {
   if(!opts.migrationPath) throw new Error("Missing migration path");
 
   this._files = opts.files;
-  this._dryrun = (opts.dryrun) ? opts.dryrun : false;
   this._autorun = (opts.autorun) ? opts.autorun : false;
   this._migrationPath = opts.migrationPath; 
+
+  return;
 };
 
 /**
