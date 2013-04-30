@@ -1,11 +1,11 @@
 {
-  "name": "mongrate",
+  "name": "yogrit",
   "version": "0.0.1",
-  "description": "Simple Migrations for Node + mongodb",
-  "main": "mongrate.js",
+  "description": "simple migrations for node + mongodb",
+  "main": "yogrit.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/hevets/mongrate.git"
+    "url": "git://github.com/hevets/yogrit.git"
   },
   "keywords": [
     "mongodb",
@@ -14,7 +14,7 @@
     "migrations"
   ],
   "bin": {
-    "mongrate": "./bin/mongrate"
+    "yogrit": "./bin/yogrit"
   },
   "author": "Steve Henderson",
   "readmeFilename": "README.md",

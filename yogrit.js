@@ -15,11 +15,11 @@ var async = require('async');
 var _ = require('underscore');
 
 /**
- * Mgrate: Update Mgrate that is test driven
+ * Yogrit: Update Yogrit that is test driven
  * Usage: 
- * var Mgrate = new Mgrate({files: ['update.file.1.js', 'update.file.2.js'], autorun: true, dryrun: true, });
+ * var Yogrit = new Yogrit({files: ['update.file.1.js', 'update.file.2.js'], autorun: true, dryrun: true, });
  * */
-function Mgrate(opts) {
+function Yogrit(opts) {
   Evenmitter.call(this);
 
   if(opts && typeof opts === 'object')
@@ -33,13 +33,13 @@ function Mgrate(opts) {
     this.start();
 };
 
-// Mgrate.prototype.__proto__ = EventEmitter.prototype;
-il.inherits(Mgrate, EventEmitter);/**
- * Parse options passed to the Mgrate, either by constructor or by .start() method
+// Yogrit.prototype.__proto__ = EventEmitter.prototype;
+il.inherits(Yogrit, EventEmitter);/**
+ * Parse options passed to the Yogrit, either by constructor or by .start() method
   * @param {object} opts [The options object]
  * @param {opts.files} opts.files [Required: List of update files to be used]
  */
-Mgrate.prototype._parseOptions = function(opts) {
+Yogrit.prototype._parseOptions = function(opts) {
   if(_.isEmpty(opts)) throw new Error(" Missing Parameters ex. { files: ['array', 'of', 'files'] } "); 
   if(!opts.files ) throw new Error(" Missing files declaration in options hash ex. { files: ['array', 'of', 'files'] } ");
   if(!opts.migrationPath) throw new Error("Missing migration path");
@@ -51,11 +51,11 @@ Mgrate.prototype._parseOptions = function(opts) {
 };
 
 /**
- * Setup will prime the Mgrate with its tasks
+ * Setup will prime the Yogrit with its tasks
  * @param  {Array} li [Files to be used in the update]
  * @return {[void]}
  */
-Mgrate.prototype.start = function(opts) {
+Yogrit.prototype.start = function(opts) {
   if(opts && typeof opts === 'object')
     this._parseOptions(opts);
 
@@ -68,9 +68,9 @@ Mgrate.prototype.start = function(opts) {
  * Loops through the FilesList Array and gets full path
  * Checks the file to see if it exists, adds to _updateQ if it does.
  * 
- * @param  {Array}  list             List of files to be used by the Mgrate
+ * @param  {Array}  list             List of files to be used by the Yogrit
  * @return {void */
-Mgrate.prototype._build = function() {
+Yogrit.prototype._build = function() {
   var self = this;
 
   _.each(self._files, function(item) {
@@ -88,7 +88,7 @@ Mgrate.prototype._build = function() {
 /**
  * Checks to see if required parameters are avail
  */
-Mgrate.prototype._validateParameters = function() {
+Yogrit.prototype._validateParameters = function() {
   if(!this._files && !this._migrationPath)
     throw new Error("Your missing parameters to start migration. \n Please ensure you've provided a migrationPath and files list");
 
@@ -100,7 +100,7 @@ Mgrate.prototype._validateParameters = function() {
  * 
  * @return {Boolean} True if all files are declared properly
  */
-Mgrate.prototype._validateUpdateFile = function(updateFile) {
+Yogrit.prototype._validateUpdateFile = function(updateFile) {
   var file = require(updateFile);
   return true;
   return file.preTest && file.postTest && file.update && file.getDocuments && file.save;
@@ -109,7 +109,7 @@ Mgrate.prototype._validateUpdateFile = function(updateFile) {
 /**
  * Loops through the updateQ and starts the update process
  */
-Mgrate.prototype._loadUpdates = function() {
+Yogrit.prototype._loadUpdates = function() {
   var self = this;
 
   async.each(this._updateQ, function(file, callback) {
@@ -126,14 +126,15 @@ Mgrate.prototype._loadUpdates = function() {
 
 /**
  * _runUpdate: 
- */Mgrate.prototype._runUpdate = function(file, callback) {
+ */
+Yogrit.prototype._runUpdate = function(file, callback) {
   console.log(require.main.filename)
   var documents = file.getDocuments(function(documents) {
     console.log(documents);
   });
 };
 
-// Mgrate.prototype._startUpdate = function() {
+// Yogrit.prototype._startUpdate = function() {
    var self = this;
   // maybe have something in here called raw to do a one off update quick and dirty ?
   // _.each(self._updateQ, function(file) {
@@ -155,7 +156,7 @@ Mgrate.prototype._loadUpdates = function() {
 //   });
 // };
 
-// Mgrate.prototype._updateFile = function(file) {
+// Yogrit.prototype._updateFile = function(file) {
    async.series({
 //     collection: function(next) {
 //       file.update(next);
@@ -167,5 +168,5 @@ Mgrate.prototype._loadUpdates = function() {
 //   });
 // };
 
-// var Mgrate = new Mgrate({ files: ['0.14.0-updateStudentCount.js'] });
-// mgrate.start()exports = module.exports = Mgrate;
+// var yogrit = new Yogrit({ files: ['0.14.0-updateStudentCount.js'] });
+// yogrit.start()exports = module.exports = Yogrit;
