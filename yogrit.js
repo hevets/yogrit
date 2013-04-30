@@ -16,16 +16,22 @@ var _ = require('underscore');
 
 /**
  * Yogrit: Update Yogrit that is test driven
+ *
  * Usage: 
  * var Yogrit = new Yogrit({files: ['update.file.1.js', 'update.file.2.js'], autorun: true, dryrun: true, });
- * */
+ * 
+ */
 function Yogrit(opts) {
-  Evenmitter.call(this);
+  EventEmitter.call(this);
 
   if(opts && typeof opts === 'object')
     this._parseOptions(opts);
   
-  this._dir = process.env.PWD; // sets the path to be relative to the file running this process
+  // TODO: this might cause issues when running with the binary file
+  if(require.main)
+    this._dir = path.dirname(require.main.filename)
+  // this._dir = process.env.PWD; // sets the path to be relative to the file running this process
+  
   this._state = false;
   this._updateQ = [];
 
@@ -34,9 +40,12 @@ function Yogrit(opts) {
 };
 
 // Yogrit.prototype.__proto__ = EventEmitter.prototype;
-il.inherits(Yogrit, EventEmitter);/**
+util.inherits(Yogrit, EventEmitter);
+
+/**
  * Parse options passed to the Yogrit, either by constructor or by .start() method
-  * @param {object} opts [The options object]
+ *
+ * @param {object} opts [The options object]
  * @param {opts.files} opts.files [Required: List of update files to be used]
  */
 Yogrit.prototype._parseOptions = function(opts) {
@@ -52,7 +61,7 @@ Yogrit.prototype._parseOptions = function(opts) {
 
 /**
  * Setup will prime the Yogrit with its tasks
- * @param  {Array} li [Files to be used in the update]
+ * @param  {Array} list [Files to be used in the update]
  * @return {[void]}
  */
 Yogrit.prototype.start = function(opts) {
@@ -69,12 +78,15 @@ Yogrit.prototype.start = function(opts) {
  * Checks the file to see if it exists, adds to _updateQ if it does.
  * 
  * @param  {Array}  list             List of files to be used by the Yogrit
- * @return {void */
+ * @return {void}
+ */
 Yogrit.prototype._build = function() {
   var self = this;
 
   _.each(self._files, function(item) {
     var filePath = path.join(self._dir, self._migrationPath, item);
+
+    console.log(filePath)
 
     if(!fs.existsSync(filePath)) throw Error('Update File ' + item + ' does not exist');
     if(!self._validateUpdateFile(filePath)) throw Error('Update file is missing methods, required methods (test, pre, post, update)');
@@ -127,46 +139,48 @@ Yogrit.prototype._loadUpdates = function() {
 /**
  * _runUpdate: 
  */
-Yogrit.prototype._runUpdate = function(file, callback) {
-  console.log(require.main.filename)
-  var documents = file.getDocuments(function(documents) {
-    console.log(documents);
+
+Yogrit.prototype._runUpdate = function(file, callback) { 
+
+  file.bucket(function(collection) {
+    async.each(collection, function(model, cb) {
+      async.series({
+
+        qualify: function(next) {
+          file.qualify(model, next);
+        }, 
+        
+        mutate: function(next) {
+          file.mutate(model, next);
+        },
+
+        verify: function(next) {
+          file.verify(model, next);
+        },
+
+        save: function(next) {
+          if(!file.save)
+            return next();
+          
+          file.save(model, next);
+        }
+      }, function(err, results) {
+        if(err) return console.error('\033[31m' + err + '\033[m');
+
+        return cb();
+      });  
+
+    }, function(err) {
+      if(err) throw new Error();
+
+      console.info('Done');
+    });
+      
   });
 };
 
-// Yogrit.prototype._startUpdate = function() {
-   var self = this;
-  // maybe have something in here called raw to do a one off update quick and dirty ?
-  // _.each(self._updateQ, function(file) {
-  //   async.series([
-  //     function updateFile(next) {
-  //       file.update(next);
-  //     }
-  //   ], function(err, results) {
-  //     if(err) process.exit(1);
+function UpdateFile() {
 
-  //     process.exit(1); // ran successfully
-  //   });
+}
 
-    // need a collection
-    // loop through that collection test a model to see if it needs an udpate (pre)
-    // if model needs update then run update
-    // on postUpdate run test 
-    // save after successful test
-//   });
-// };
-
-// Yogrit.prototype._updateFile = function(file) {
-   async.series({
-//     collection: function(next) {
-//       file.update(next);
-//     }
-//   }, function(err, results) {
-//     if(err) process.exit(1); // there was an error
-
-//     process.exit(1); // end successfully
-//   });
-// };
-
-// var yogrit = new Yogrit({ files: ['0.14.0-updateStudentCount.js'] });
-// yogrit.start()exports = module.exports = Yogrit;
+exports = module.exports = Yogrit;
