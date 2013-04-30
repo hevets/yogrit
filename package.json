@@ -1,0 +1,26 @@
+{
+  "name": "mongrate",
+  "version": "0.0.1",
+  "description": "Simple Migrations for Node + mongodb",
+  "main": "mongrate.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hevets/mongrate.git"
+  },
+  "keywords": [
+    "mongodb",
+    "migrate",
+    "node",
+    "migrations"
+  ],
+  "bin": {
+    "mongrate": "./bin/mongrate"
+  },
+  "author": "Steve Henderson",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "optimist": "~0.4.0",
+    "async": "~0.2.7",
+    "underscore": "~1.4.4"
+  }
+}

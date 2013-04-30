@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+
+/**
+ * dependencies
+ */
+
+var Mongrate = require('../mongrate');
+var Create = require('../lib/create');
+
+var usage = [
+  '',
+  'Mongrate has two methods: \033[32mcreate \033[mand \033[32mrun\033[m'
+].join('\n');
+
+var opt = require('optimist');
+var argv = require('optimist')
+  .usage(usage)
+  .describe('create', '[file1] <[more] [files] [if] [you] [want]>')
+  .describe('run', '<[file1] [file2]>')
+  .argv;
+
+if(!argv.create && !argv.run)
+  opt.showHelp();
+
