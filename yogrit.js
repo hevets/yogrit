@@ -37,6 +37,8 @@ function Yogrit(opts) {
 
   if(this._autoRun)
     this.start();
+
+  this.on('migration:complete', process.exit);
 };
 
 // Yogrit.prototype.__proto__ = EventEmitter.prototype;
@@ -115,8 +117,8 @@ Yogrit.prototype._validateParameters = function() {
  */
 Yogrit.prototype._validateUpdateFile = function(updateFile) {
   var file = require(updateFile);
-  return true;
-  return file.preTest && file.postTest && file.update && file.getDocuments && file.save;
+
+  return file.bucket && file.qualify && file.mutate && file.verify && file.save;
 };
 
 /**
@@ -138,6 +140,7 @@ Yogrit.prototype._loadUpdates = function() {
 };
 
 Yogrit.prototype._runUpdate = function(file, callback) { 
+  var self = this;
 
   // TODO: create a wrapper object to hold migrate_files
   file.opts = (file.opts) ? file.opts : {};
@@ -145,7 +148,9 @@ Yogrit.prototype._runUpdate = function(file, callback) {
   file.opts.verify = (file.opts.verify) ? file.opts.verify : true;
   file.opts.save = (file.opts.save) ? file.opts.save : false;
 
-  file.bucket(function(collection) {
+  file.bucket(function(err, collection) {
+    if(err) throw new Error(err);
+
     async.each(collection, function(model, cb) {
       async.series({
 
@@ -173,6 +178,7 @@ Yogrit.prototype._runUpdate = function(file, callback) {
             
           return next();
         }
+        
       }, function(err, results) {
         if(err) return console.error('\033[31m' + err + '\033[m');
 
@@ -181,7 +187,8 @@ Yogrit.prototype._runUpdate = function(file, callback) {
     }, function(err) {
       if(err) throw new Error();
 
-      console.info('Done');
+      console.log('\033[32mmigration complete!');
+      self.emit('migration:complete');
     }); // end async.each
       
   });
