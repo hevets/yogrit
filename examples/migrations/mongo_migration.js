@@ -23,9 +23,9 @@ module.exports = {
   bucket: function(next) {
     console.log('bucket phase')
 
-    require('./../db').remove();
-    var Person = require('./../db').model;
-    var data = require('./../db').data;
+    require('./../mongo_setup_db').remove();
+    var Person = require('./../mongo_setup_db').model;
+    var data = require('./../mongo_setup_db').data;
 
     async.each(data, function(data, cb) {
       var person = new Person(data);
