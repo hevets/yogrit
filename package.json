@@ -22,5 +22,8 @@
     "optimist": "~0.4.0",
     "async": "~0.2.7",
     "underscore": "~1.4.4"
+  },
+  "devDependencies": {
+    "mongoose": "3.6.x"
   }
 }

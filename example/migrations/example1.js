@@ -2,12 +2,13 @@
  * Require anything you might need for the migration
  */
 
-// var mongoose = require('mongoose');
+var assert = require('assert');
+var async = require('async');
 
 module.exports = {
   
   /**
-   * opts: can modifiy behavior of migration
+   * opts: can modifiy behavior of migration script
    */
 
   opts: {
@@ -22,7 +23,20 @@ module.exports = {
   bucket: function(next) {
     console.log('bucket phase')
 
-    next(['file', 'another', 'andanother']);
+    require('./../db').remove();
+    var Person = require('./../db').model;
+    var data = require('./../db').data;
+
+    async.each(data, function(data, cb) {
+      var person = new Person(data);
+      person.save(cb);
+    }, function(err) {
+      if(err) return next(err)
+
+      Person.find().exec(function(err, docs) {
+        next(null, docs)
+      });  
+    });
   },
   
   /**
@@ -32,6 +46,7 @@ module.exports = {
   qualify: function(model, next) {
     console.log('qualify phase')
 
+    console.log(model._id)
     next();
   },
   
@@ -41,6 +56,8 @@ module.exports = {
 
   mutate: function(model, next) {
     console.log('mutate phase')
+
+    console.log(model._id)
 
     next();
   },
@@ -52,6 +69,8 @@ module.exports = {
   verify: function(model, next) {
     console.log('verify phase')
 
+    console.log(model._id)
+    
     next();
   },
 
@@ -62,6 +81,8 @@ module.exports = {
   save: function(model, next) {
     console.log('save phase')
 
+    console.log(model._id)
+    
     next();
   }
 
