@@ -128,7 +128,7 @@ Yogrit.prototype._loadUpdates = function() {
   var self = this;
 
   async.each(this._updateQ, function(file, callback) {
-    self._runUpdate(file, callback);  
+    self._runUpdate(file, callback);
   }, function(err) {
     if(err) {
       console.error('There was an error with the updates: ', err);
@@ -156,7 +156,7 @@ Yogrit.prototype._runUpdate = function(file, callback) {
 
         qualify: function(next) {
           if(file.opts.qualify)
-            return file.qualify(model, next)
+            return file.qualify(model, next);
 
           return next();
         }, 

@@ -4,6 +4,7 @@
 
 var assert = require('assert');
 var async = require('async');
+var test = require('tap').assert;
 
 module.exports = {
   
@@ -44,10 +45,18 @@ module.exports = {
    */
 
   qualify: function(model, next) {
+
     console.log('qualify phase')
 
-    console.log(model._id)
-    next();
+    console.log(typeof model.age, model.age);
+    
+    if(typeof model.age !== 'number')
+      return next('Not a number')
+    
+    return next();
+
+    // console.log(model._id)
+    // next();
   },
   
   /**
@@ -55,10 +64,6 @@ module.exports = {
    */
 
   mutate: function(model, next) {
-    console.log('mutate phase')
-
-    console.log(model._id)
-
     next();
   },
   
@@ -67,10 +72,6 @@ module.exports = {
    */
 
   verify: function(model, next) {
-    console.log('verify phase')
-
-    console.log(model._id)
-    
     next();
   },
 
@@ -79,10 +80,7 @@ module.exports = {
    */
 
   save: function(model, next) {
-    console.log('save phase')
-
-    console.log(model._id)
-    
+    console.log('saving ', model.name);
     next();
   }
 

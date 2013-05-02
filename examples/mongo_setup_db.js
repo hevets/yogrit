@@ -4,15 +4,15 @@ db.connect('mongodb://localhost:27017/yogrit_test');
 
 var PeopleSchema = module.exports.schema = new db.Schema({
   name: String,
-  age: Number, 
-  gender: String
+  age: db.Schema.Types.Mixed, 
+  gender: String  
 }, { collection: "People"});
 
 var PersonModel = module.exports.model = db.model('Person', PeopleSchema);
 
 var data = module.exports.data = [
     {name: 'Brian Tucker', age: Math.round(Math.random() * 90), gender: 'm'}, 
-    {name: 'Luke Jonny', age: Math.round(Math.random() * 90), gender: 'm'}, 
+    {name: 'Luke Jonny', age: String(Math.round(Math.random() * 90)), gender: 'm'}, 
     {name: 'Sally Mcgavin', age: Math.round(Math.random() * 90), gender: 'm'}, 
     {name: 'Derrek Woodstock', age: Math.round(Math.random() * 90), gender: 'm'}, 
     {name: 'Gerald Dumont', age: Math.round(Math.random() * 90), gender: 'm'}, 
