@@ -1,4 +1,9 @@
-Yogrit
-========
+# Yogrit  
+Simple Database Migrations for Node.js
 
-Simple Migrations for Node + mongodb
+
+
+### Usage
+
+    $ npm install -g yogrit
+   
