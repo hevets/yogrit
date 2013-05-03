@@ -2,7 +2,6 @@
  * Require anything you might need for the migration
  */
 
-var assert = require('assert');
 var async = require('async');
 var test = require('tap').assert;
 
@@ -13,6 +12,7 @@ module.exports = {
    */
 
   opts: {
+    fast: true,
     save: true
   },
 
@@ -22,8 +22,6 @@ module.exports = {
    */
 
   bucket: function(next) {
-    console.log('bucket phase')
-
     require('./../mongo_setup_db').remove();
     var Person = require('./../mongo_setup_db').model;
     var data = require('./../mongo_setup_db').data;
@@ -34,7 +32,7 @@ module.exports = {
     }, function(err) {
       if(err) return next(err)
 
-      Person.find().exec(function(err, docs) {
+      Person.find().limit(4).exec(function(err, docs) {
         next(null, docs)
       });  
     });
@@ -45,18 +43,10 @@ module.exports = {
    */
 
   qualify: function(model, next) {
-
-    console.log('qualify phase')
-
-    console.log(typeof model.age, model.age);
-    
     if(typeof model.age !== 'number')
-      return next('Not a number')
+      return next('Age was not a number', model);
     
     return next();
-
-    // console.log(model._id)
-    // next();
   },
   
   /**
@@ -64,6 +54,7 @@ module.exports = {
    */
 
   mutate: function(model, next) {
+    model.age += 1;
     next();
   },
   
@@ -72,6 +63,7 @@ module.exports = {
    */
 
   verify: function(model, next) {
+
     next();
   },
 
@@ -80,7 +72,6 @@ module.exports = {
    */
 
   save: function(model, next) {
-    console.log('saving ', model.name);
     next();
   }
 

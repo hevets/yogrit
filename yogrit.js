@@ -33,7 +33,9 @@ function Yogrit(opts) {
   // this._dir = process.env.PWD; // sets the path to be relative to the file running this process
   
   this._state = false;
+  this._orm = false;
   this._updateQ = [];
+  this._failedUpdateQ = [];
 
   if(this._autoRun)
     this.start();
@@ -89,8 +91,6 @@ Yogrit.prototype._build = function() {
   _.each(self._files, function(item) {
     var filePath = path.join(self._dir, self._migrationPath, item);
 
-    console.log(filePath)
-
     if(!fs.existsSync(filePath)) throw Error('Update File ' + item + ' does not exist');
     if(!self._validateUpdateFile(filePath)) throw Error('Update file is missing methods, required methods (test, pre, post, update)');
 
@@ -118,7 +118,9 @@ Yogrit.prototype._validateParameters = function() {
 Yogrit.prototype._validateUpdateFile = function(updateFile) {
   var file = require(updateFile);
 
-  return file.bucket && file.qualify && file.mutate && file.verify && file.save;
+  if(file.query && file.save) this._orm = true;
+
+  return file.pre && file.mutate && file.post;
 };
 
 /**
@@ -128,7 +130,7 @@ Yogrit.prototype._loadUpdates = function() {
   var self = this;
 
   async.each(this._updateQ, function(file, callback) {
-    self._runUpdate(file, callback);
+    self._migrate(file, callback);
   }, function(err) {
     if(err) {
       console.error('There was an error with the updates: ', err);
@@ -139,59 +141,174 @@ Yogrit.prototype._loadUpdates = function() {
   });
 };
 
-Yogrit.prototype._runUpdate = function(file, callback) { 
+Yogrit.prototype._migrate = function(file, callback) {
   var self = this;
 
-  // TODO: create a wrapper object to hold migrate_files
-  file.opts = (file.opts) ? file.opts : {};
-  file.opts.qualify = (file.opts.qualify) ? file.opts.qualify : true;
-  file.opts.verify = (file.opts.verify) ? file.opts.verify : true;
-  file.opts.save = (file.opts.save) ? file.opts.save : false;
+  async.series({
+    pre: function(next) {
+      return file.pre(next);
+    },
+    mutate: function(next) {
+      return file.mutate(next);
+    },
+    post: function(next) {
+      return file.post(next);
+    }
+  }, function(err, results) {
+    if(err) throw new Error();
+    
+    console.log('\n\033[0;33mMigration Results\033[m');
+    console.log('Records to update: ', results.pre);
+    console.log('Records updated:   ', results.mutate);
+    console.log('Records remaining: ', results.post);
+    console.log('\n\033[32m[ migration complete ]\033[m');
 
-  file.bucket(function(err, collection) {
-    if(err) throw new Error(err);
-
-    async.each(collection, function(model, cb) {
-      async.series({
-
-        qualify: function(next) {
-          if(file.opts.qualify)
-            return file.qualify(model, next);
-
-          return next();
-        }, 
-        
-        mutate: function(next) {
-          file.mutate(model, next);
-        },
-
-        verify: function(next) {
-          if(file.opts.verify)
-            return file.verify(model, next);
-
-          return next();
-        },
-
-        save: function(next) {
-          if(file.opts.save)
-            return file.save(model, next);
-            
-          return next();
-        }
-        
-      }, function(err, results) {
-        if(err) return console.error('\033[31m' + err + '\033[m');
-
-        return cb();
-      }); // async.end series
-    }, function(err) {
-      if(err) throw new Error();
-
-      console.log('\033[32mmigration complete!');
-      self.emit('migration:complete');
-    }); // end async.each
-      
+    callback();
   });
 };
+
+// Yogrit.prototype._nativeUpdate = function(file, callback) {
+//   var self = this;
+
+//   // pre, post, update
+
+// };
+
+// Yogrit.prototype._ormUpdate = function(file, callback) {
+//   var self = this;
+
+//   // pre, post, update
+// };
+
+// Yogrit.prototype._runUpdate = function(file, callback) { 
+//   var self = this;
+
+//   // TODO: create a wrapper object to hold migrate_files
+//   file.opts = (file.opts) ? file.opts : {};
+//   file.opts.fast = (file.opts.fast) ? file.opts.fast : true;
+//   file.opts.qualify = (file.opts.qualify) ? file.opts.qualify : true;
+//   file.opts.verify = (file.opts.verify) ? file.opts.verify : true;
+//   file.opts.save = (file.opts.save) ? file.opts.save : false;
+
+//   file.bucket(function(err, collection) {
+//     async.each(collection, function(model, cb) {
+//       async.series({
+
+//         qualify: function(next) {
+//           if(file.opts.qualify)
+//             return file.qualify(model, next);
+
+//           return next();
+//         }, 
+        
+//         mutate: function(next) {
+//           file.mutate(model, next);
+//         },
+
+//         verify: function(next) {
+//           if(file.opts.verify)
+//             return file.verify(model, next);
+
+//           return next();
+//         },
+
+//         save: function(next) {
+//           if(file.opts.save)
+//             return file.save(model, next);
+            
+//           return next();
+//         }
+        
+//       }, function(err, results) {
+//         if(err) {
+//           self._failedUpdateQ.push({ model: results, err: err });
+//         } 
+
+//         return cb();
+//       }); // async.end series
+//     }, function(err) {
+//       var msg = '\n\033[32mmigration complete';
+//       if(err) throw new Error();
+
+//       if(!_.isEmpty(self._failedUpdateQ)) {
+//         msg += '\033[31m (with errors) \033[m';
+//         console.error('\n\033[31mUnable to migrate: \033[0;33m' + self._failedUpdateQ.length + ' document(s) \033[m');
+//         self._failedUpdateQ.forEach(function(fail) {
+//           console.error('Error: ', fail.err);
+//           console.error(JSON.stringify(fail.model, null, '    '));
+//         });
+//       }
+
+//       console.log(msg);
+//       console.log('\n' + 'Updated ', collection.length, self._failedUpdateQ.length);
+
+//       callback();
+      
+//     }); // end async.each
+//   });
+
+//   self.emit('migration:complete');
+// };
+
+// Yogrit.prototype._slowRunner = function() {
+//   file.bucket(function(err, collection) {
+//     if(err) throw new Error(err);
+
+//     async.each(collection, function(model, cb) {
+//       async.series({
+
+//         qualify: function(next) {
+//           if(file.opts.qualify)
+//             return file.qualify(model, next);
+
+//           return next();
+//         }, 
+        
+//         mutate: function(next) {
+//           file.mutate(model, next);
+//         },
+
+//         verify: function(next) {
+//           if(file.opts.verify)
+//             return file.verify(model, next);
+
+//           return next();
+//         },
+
+//         save: function(next) {
+//           if(file.opts.save)
+//             return file.save(model, next);
+            
+//           return next();
+//         }
+        
+//       }, function(err, results) {
+//         if(err) {
+//           self._failedUpdateQ.push({ model: results, err: err });
+//         } 
+
+//         return cb();
+//       }); // async.end series
+//     }, function(err) {
+//       var msg = '\n\033[32mmigration complete';
+//       if(err) throw new Error();
+
+//       if(!_.isEmpty(self._failedUpdateQ)) {
+//         msg += '\033[31m (with errors) \033[m';
+//         console.error('\n\033[31mUnable to migrate: \033[0;33m' + self._failedUpdateQ.length + ' document(s) \033[m');
+//         self._failedUpdateQ.forEach(function(fail) {
+//           console.error('Error: ', fail.err);
+//           console.error(JSON.stringify(fail.model, null, '    '));
+//         });
+//       }
+
+//       console.log(msg);
+//       console.log('\n' + 'Updated ', collection.length, self._failedUpdateQ.length);
+
+//       callback();
+      
+//     }); // end async.each
+//   });
+// };
 
 exports = module.exports = Yogrit;
