@@ -129,16 +129,16 @@ Yogrit.prototype._validateUpdateFile = function(updateFile) {
 Yogrit.prototype._loadUpdates = function() {
   var self = this;
 
-  async.each(this._updateQ, function(file, callback) {
+  async.eachSeries(this._updateQ, function(file, callback) {
     if(typeof file.query !== 'function') self._migrate(file, callback);
     else self._migrateEach(file, callback);
   }, function(err) {
     if(err) {
-      console.error('There was an error with the updates: ', err);
+      console.log(err);
       return process.exit(1);
-    }
+    } 
 
-    process.exit()
+    return process.exit()
   });
 };
 
@@ -158,11 +158,11 @@ Yogrit.prototype._migrate = function(file, callback) {
   }, function(err, results) {
     if(err) throw new Error();
     
-    console.log('\n\033[0;33mMigration Results\033[m');
+    console.log('\n\033[0;33mMigration Results\033[m\n');
     console.log('Records to update: ', results.pre);
     console.log('Records updated:   ', results.mutate);
     console.log('Records remaining: ', results.post);
-    console.log('\n\033[32m[ migration complete ]\033[m');
+    console.log('\n\033[32m[ migration complete ]\033[m\n');
 
     callback();
   });
@@ -179,20 +179,24 @@ Yogrit.prototype._migrateEach = function(file, callback) {
       self._migrateEachSeries(file, callback);
     },
     function(err) {
-      if(err) return console.error(err);
+      if(err) return callback(err);
 
-      console.log('stop whilst');
+      callback();
     }
   );
 };
 
 Yogrit.prototype._migrateEachSeries = function(file, callback) {
   file.query(function(err, collection) {
-    if(!collection) return callback('No more models');
-    if(!_.isArray(collection)) model = [collection];
+    if(!collection) return callback('\n\033[32m[ migration complete ]\033[m\n');
+    if(!_.isArray(collection)) collection = [collection];
+    if(!collection.length) return callback('\n\033[32m[ migration complete ]\033[m\n');
 
     async.each(collection, function(model, cb) {
       async.series({
+        _stats: function(next) {
+          next(null, model);
+        }, 
         pre: function(next) {
           return file.pre(model, next);
         },
@@ -206,12 +210,13 @@ Yogrit.prototype._migrateEachSeries = function(file, callback) {
           return file.save(model, next);
         }
       }, function(err, results) {
-        if(err) return console.error(err);
+        if(err) return cb(err);
 
+        console.log('\033[32mFinished: \033[m', results._stats._id);
         return cb();
       });
     }, function(err) {
-      if(err) return console.error(err);
+      if(err) return callback(err);
 
       return callback();
     });
