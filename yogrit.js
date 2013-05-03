@@ -130,7 +130,8 @@ Yogrit.prototype._loadUpdates = function() {
   var self = this;
 
   async.each(this._updateQ, function(file, callback) {
-    self._migrate(file, callback);
+    if(typeof file.query !== 'function') self._migrate(file, callback);
+    else self._migrateEach(file, callback);
   }, function(err) {
     if(err) {
       console.error('There was an error with the updates: ', err);
@@ -164,6 +165,49 @@ Yogrit.prototype._migrate = function(file, callback) {
     console.log('\n\033[32m[ migration complete ]\033[m');
 
     callback();
+  });
+};
+
+Yogrit.prototype._migrateEach = function(file, callback) {
+  var self = this;
+
+  async.whilst(
+    function() {
+      return true;
+    },
+    function(callback) {
+      self._migrateEachSeries(file, callback);
+    },
+    function(err) {
+      if(err) return console.error(err);
+
+      console.log('stop whilst');
+    }
+  );
+};
+
+Yogrit.prototype._migrateEachSeries = function(file, callback) {
+  file.query(function(err, model) {
+    if(!model) return callback('No more models');
+
+    async.series({
+      pre: function(next) {
+      return file.pre(model, next);
+      },
+      mutate: function(next) {
+        return file.mutate(model, next);
+      },
+      post: function(next) {
+        return file.post(model, next);
+      },
+      save: function(next) {
+        return file.save(model, next);
+      }
+    }, function(err, results) {
+
+      return callback();
+    });
+    
   });
 };
 

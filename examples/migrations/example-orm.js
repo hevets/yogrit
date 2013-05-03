@@ -1,28 +1,30 @@
+var c = 2;
+var arr = ['a', 'b', 'c'];
 
 module.exports = {
   
   query: function(next) {
-    console.log('query')
+    console.log('query');
+    next(null, arr[c--]);
+  },
+
+  pre: function(model, next) {
+    console.log('pre', model)
     next();
   },
 
-  pre: function(next) {
-    console.log('pre')
+  mutate: function(model, next) {
+    console.log('mutate', model)
     next();
   },
 
-  mutate: function(next) {
-    console.log('mutate')
+  post: function(model, next) {
+    console.log('post', model)
     next();
   },
 
-  post: function(next) {
-    console.log('post')
-    next();
-  },
-
-  save: function(next) {
-    console.log('save')
+  save: function(model, next) {
+    console.log('save', model)
     next();
   }
 
