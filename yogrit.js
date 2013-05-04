@@ -32,8 +32,6 @@ function Yogrit(opts) {
     this._dir = path.dirname(require.main.filename)
   // this._dir = process.env.PWD; // sets the path to be relative to the file running this process
   
-  this._state = false;
-  this._orm = false;
   this._updateQ = [];
   this._failedUpdateQ = [];
 
@@ -73,9 +71,17 @@ Yogrit.prototype.start = function(opts) {
   if(opts && typeof opts === 'object')
     this._parseOptions(opts);
 
-  this._validateParameters();
-  this._build();
-  this._loadUpdates();
+  this._run();
+};
+
+/**
+ * Checks to see if required parameters are avail
+ */
+Yogrit.prototype._validateParameters = function() {
+  if(!this._files && !this._migrationPath)
+    throw new Error("Your missing parameters to start migration. \n Please ensure you've provided a migrationPath and files list");
+
+  return;
 };
 
 /**
@@ -94,18 +100,11 @@ Yogrit.prototype._build = function() {
     if(!fs.existsSync(filePath)) throw Error('Update File ' + item + ' does not exist');
     if(!self._validateUpdateFile(filePath)) throw Error('Update file is missing methods, required methods (test, pre, post, update)');
 
-    self._updateQ.push(require(filePath));
+    var r = require(filePath);
+    r._yogritId = item;
+
+    self._updateQ.push(r);
   });
-
-  return;
-};
-
-/**
- * Checks to see if required parameters are avail
- */
-Yogrit.prototype._validateParameters = function() {
-  if(!this._files && !this._migrationPath)
-    throw new Error("Your missing parameters to start migration. \n Please ensure you've provided a migrationPath and files list");
 
   return;
 };
@@ -118,16 +117,17 @@ Yogrit.prototype._validateParameters = function() {
 Yogrit.prototype._validateUpdateFile = function(updateFile) {
   var file = require(updateFile);
 
-  if(file.query && file.save) this._orm = true;
-
   return file.pre && file.mutate && file.post;
 };
 
 /**
  * Loops through the updateQ and starts the update process
  */
-Yogrit.prototype._loadUpdates = function() {
+Yogrit.prototype._run = function() {
   var self = this;
+
+  this._validateParameters();
+  this._build();
 
   async.eachSeries(this._updateQ, function(file, callback) {
     if(typeof file.query !== 'function') self._migrate(file, callback);
@@ -144,7 +144,7 @@ Yogrit.prototype._loadUpdates = function() {
 
 Yogrit.prototype._migrate = function(file, callback) {
   var self = this;
-
+  console.log(file._yogritId);
   async.series({
     pre: function(next) {
       return file.pre(next);
@@ -187,10 +187,12 @@ Yogrit.prototype._migrateEach = function(file, callback) {
 };
 
 Yogrit.prototype._migrateEachSeries = function(file, callback) {
+  console.log(file._yogritId);
+
   file.query(function(err, collection) {
-    if(!collection) return callback('\n\033[32m[ migration complete ]\033[m\n');
+    if(!collection) return callback('\n' + file._yogritId + ' \033[32m [ complete ]\033[m\n');
     if(!_.isArray(collection)) collection = [collection];
-    if(!collection.length) return callback('\n\033[32m[ migration complete ]\033[m\n');
+    if(!collection.length) return callback('\n' + file._yogritId + ' \033[32m [ complete ]\033[m\n');
 
     async.each(collection, function(model, cb) {
       async.series({
