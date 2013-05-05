@@ -1,9 +1,11 @@
 var async = require('async');
 var test = require('tap').assert;
-    var Person = require('./../db').model;
+var Person = require('./../db').model;
+var Update = require('./../db').UpdateModel;
+var path = require('path');
 
 module.exports = {
-  
+
   query: function(next) {
     Person.findOne({ hair : null }).exec(function(err, docs) {
       next(null, docs)

@@ -21,6 +21,11 @@ var PeopleSchema = module.exports.schema = new db.Schema({
   hair: Boolean
 }, { collection: "People" });
 
+var UpdatesSchema = db.Schema({
+  name: String,
+  createdAt: { type:Date, default: new Date() }
+});
+
 var PersonModel = module.exports.model = db.model('Person', PeopleSchema);
 
 PersonModel.remove().exec();

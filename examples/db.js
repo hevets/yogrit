@@ -9,6 +9,13 @@ var PeopleSchema = module.exports.schema = new db.Schema({
   hair: Boolean
 }, { collection: "People"});
 
+var UpdatesSchema = db.Schema({
+  name: String,
+  createdAt: { type:Date, default: new Date() }
+});
+
+var UpdateModel = module.exports.UpdateModel = db.model('Update', UpdatesSchema);
+
 var PersonModel = module.exports.model = db.model('Person', PeopleSchema);
 
 var data = module.exports.data = [
