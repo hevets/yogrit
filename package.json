@@ -2,7 +2,7 @@
   "name": "yogrit",
   "version": "0.0.1",
   "description": "simple migrations for node + mongodb",
-  "main": "yogrit.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/hevets/yogrit.git"
