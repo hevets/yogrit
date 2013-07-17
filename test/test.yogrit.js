@@ -14,7 +14,7 @@ test("\nyogrit constructor sets up defaults", function(t) {
   t.equal(y.updateQ.length, 0, 'updateQ should be empty on initialize');
   t.equal(y.failedUpdateQ.length, 0, 'failedUpdateQ should be empty on initialize');
 
-  t.end(); 
+  t.end();
 });
 
 test("\nyogrit options are parsed properly on constuctor", function(t) {
@@ -28,8 +28,13 @@ test("\nyogrit options are parsed properly on constuctor", function(t) {
 });
 
 test("\nyogrit migrate with specific file (test.migration.native.js)", function(t) {
-  var y = new Yogrit({files: ["test.migration.natives.js"]});
+  var y = new Yogrit({ files: ['test.migration.native.js']});
 
+  t.equal('y', 'y', 'should equal y');
+  
   y.migrate();
+
+
+  t.end();
 });
 

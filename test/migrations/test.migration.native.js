@@ -1,18 +1,21 @@
 var db = require('../db/people');
 
 module.exports = {
-  pre: function(model, next) {
+  pre: function(next) {
     console.log('pre');
+
     next();
   },
 
-  up: function(model, next) {
+  up: function(next) {
     console.log('up');
+
     next();
   },
 
-  post: function(model, next) {
+  post: function(next) {
     console.log('post');
+
     next();
   }
 };
