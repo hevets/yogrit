@@ -1,21 +1,26 @@
 var db = require('../db/people');
+var async = require('async');
 
 module.exports = {
   pre: function(next) {
-    console.log('pre');
 
-    next();
+    next(null, db.people.length);
   },
 
   up: function(next) {
-    console.log('up');
+    var updateCount = 0;
 
-    next();
+    async.each(db.people, function(person, cb) {
+      person.name = 'Peter Piper';
+      updateCount++;
+
+      cb();
+    }, function(err) {
+      next(err, updateCount);
+    });
   },
 
   post: function(next) {
-    console.log('post');
-
-    next();
+    next(null, db.people);
   }
 };

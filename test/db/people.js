@@ -1,6 +1,6 @@
 var db = { people: [] };
 
-(function setupdb() {
+(function() {
   db.people.push({name: 'Brian Tucker', age: Math.round(Math.random() * 90), gender: 'm'}); 
   db.people.push({name: 'Luke Jonny', age: String(Math.round(Math.random() * 90)), gender: 'm'}); 
   db.people.push({name: 'Sally Mcgavin', age: Math.round(Math.random() * 90), gender: 'm'}); 
@@ -12,4 +12,4 @@ var db = { people: [] };
   db.people.push({name: 'Ugene Cylon', age: Math.round(Math.random() * 90), gender: 'm'});
 })(db);
 
-exports = db;
+module.exports = db;

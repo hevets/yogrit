@@ -29,11 +29,8 @@ test("\nyogrit options are parsed properly on constuctor", function(t) {
 
 test("\nyogrit migrate with specific file (test.migration.native.js)", function(t) {
   var y = new Yogrit({ files: ['test.migration.native.js']});
-
-  t.equal('y', 'y', 'should equal y');
   
   y.migrate();
-
 
   t.end();
 });
